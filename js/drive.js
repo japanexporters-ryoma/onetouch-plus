@@ -64,6 +64,13 @@ class GoogleDriveSync {
           await this.fetchUserProfile();
           await this.syncFromDrive();
           this.updateUI();
+
+          // ログイン完了したら案内モーダルを自動的に閉じる！
+          const modal = document.getElementById('google-auth-modal');
+          if (modal) {
+            modal.classList.add('hidden');
+          }
+          this.showSyncToast(`☁️ ${this.userProfile ? this.userProfile.name : ''} さんとしてログインしました`);
         }
       });
     } catch (e) {

@@ -753,7 +753,8 @@ document.addEventListener('DOMContentLoaded', () => {
       localStorage.setItem(window.googleDriveSync.STORAGE_KEY_USER, JSON.stringify(window.googleDriveSync.userProfile));
       window.googleDriveSync.updateUI();
       updateAuthModalView();
-      window.googleDriveSync.showSyncToast('☁️ デモログイン完了：Googleドライブ同期が有効になりました');
+      closeGoogleAuthModal(); // 自動で閉じる！
+      window.googleDriveSync.showSyncToast('☁️ ログイン完了：Googleドライブ同期が有効になりました');
     });
   }
 
