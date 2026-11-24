@@ -417,7 +417,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ----------------------------------------------------
-  // 5. 朗読小説シアター（耳で聴く名作文学 & 複視配慮 特大1行表示）
+  // 5. 朗読小説シアター（誤読ゼロ・センテンス完全同期エンジン）
   // ----------------------------------------------------
   const booksSelectorScreen = document.getElementById('books-selector-screen');
   const booksPlayerScreen = document.getElementById('books-player-screen');
@@ -429,9 +429,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnBookCtrlCenter = document.getElementById('btn-book-ctrl-center');
 
   let activeBook = null;
-  let bookAudio = null;
-  let bookSentenceInterval = null;
+  let activeSentenceIdx = 0;
+  let currentSentenceAudio = null;
   let isBookPlaying = false;
+  let sentenceTimeout = null;
 
   function initBooksView() {
     if (booksSelectorScreen && booksPlayerScreen) {
@@ -454,7 +455,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="b-info">
           <div class="b-title">${book.title}</div>
           <div class="b-author">${book.author}</div>
-          <div class="b-genre">${book.genre}</div>
+          <div class="b-genre">${book.genre}（全${book.sentences.length}節）</div>
         </div>
       `;
 
@@ -473,6 +474,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function selectBook(book) {
     activeBook = book;
+    activeSentenceIdx = 0;
+
     if (booksSelectorScreen) booksSelectorScreen.classList.add('hidden');
     if (booksPlayerScreen) booksPlayerScreen.classList.remove('hidden');
 
@@ -480,76 +483,91 @@ document.addEventListener('DOMContentLoaded', () => {
       bookPlayingTitle.textContent = `${book.title} - ${book.author}`;
     }
 
-    startBookPlayback(book);
+    isBookPlaying = true;
+    updateBookPlayButtons(true);
+    playSentence(0);
 
     if (scanner.supportEnabled) {
       setTimeout(() => scanner.start(), 300);
     }
   }
 
-  function startBookPlayback(book) {
-    stopBookPlayback();
-
-    bookAudio = new Audio(book.audioSrc);
-    isBookPlaying = true;
-    updateBookPlayButtons(true);
-
-    let currentSentenceIdx = 0;
-    const sentences = book.sentences || ['朗読を開始します...'];
-    
-    if (bookCurrentSentence) {
-      bookCurrentSentence.textContent = sentences[0];
-    }
-
-    bookAudio.play().catch(e => console.warn('Audio play error:', e));
-
-    // 音声の進行に合わせて一文ずつ表示を切り替える
-    bookAudio.addEventListener('timeupdate', () => {
-      if (!bookAudio.duration) return;
-      const progress = (bookAudio.currentTime / bookAudio.duration) * 100;
-      if (bookProgressFill) {
-        bookProgressFill.style.width = `${progress}%`;
-      }
-
-      // 時間比率でセンテンスを更新
-      const targetIdx = Math.min(
-        sentences.length - 1,
-        Math.floor((bookAudio.currentTime / bookAudio.duration) * sentences.length)
-      );
-
-      if (targetIdx !== currentSentenceIdx) {
-        currentSentenceIdx = targetIdx;
-        if (bookCurrentSentence) {
-          bookCurrentSentence.style.opacity = '0';
-          bookCurrentSentence.style.transform = 'translateY(8px)';
-          setTimeout(() => {
-            bookCurrentSentence.textContent = sentences[currentSentenceIdx];
-            bookCurrentSentence.style.opacity = '1';
-            bookCurrentSentence.style.transform = 'translateY(0)';
-          }, 200);
-        }
-      }
-    });
-
-    bookAudio.addEventListener('ended', () => {
+  // 【最重要】センテンス単位で音声とテキストを100%完全一致再生
+  function playSentence(index) {
+    clearTimeout(sentenceTimeout);
+    if (!activeBook || !activeBook.sentences || index < 0 || index >= activeBook.sentences.length) {
+      // 全文再生完了
       isBookPlaying = false;
       updateBookPlayButtons(false);
       if (bookCurrentSentence) {
-        bookCurrentSentence.textContent = '【おわり】ボタンを押すと最初から再生します';
+        bookCurrentSentence.textContent = '【完】お疲れ様でした。ボタンを押すと最初から再生します。';
       }
+      if (bookProgressFill) bookProgressFill.style.width = '100%';
+      return;
+    }
+
+    activeSentenceIdx = index;
+    const currentItem = activeBook.sentences[index];
+    const total = activeBook.sentences.length;
+
+    // 1. 画面の特大文字を更新（アニメーション付き）
+    if (bookCurrentSentence) {
+      bookCurrentSentence.style.opacity = '0';
+      bookCurrentSentence.style.transform = 'translateY(6px)';
+      setTimeout(() => {
+        bookCurrentSentence.textContent = currentItem.text;
+        bookCurrentSentence.style.opacity = '1';
+        bookCurrentSentence.style.transform = 'translateY(0)';
+      }, 150);
+    }
+
+    // 2. プログレスバー更新
+    if (bookProgressFill) {
+      const pct = Math.round(((index + 1) / total) * 100);
+      bookProgressFill.style.width = `${pct}%`;
+    }
+
+    // 3. 対応する専用音声ファイルを再生
+    if (currentSentenceAudio) {
+      currentSentenceAudio.pause();
+      currentSentenceAudio = null;
+    }
+
+    const audio = new Audio(currentItem.audio);
+    currentSentenceAudio = audio;
+
+    audio.play().catch(e => {
+      console.warn('Sentence audio play error:', e);
+    });
+
+    // 4. 音声終了時、自然な呼吸・間（350ms）を置いて次の文へ進む
+    audio.addEventListener('ended', () => {
+      if (!isBookPlaying) return;
+      sentenceTimeout = setTimeout(() => {
+        playSentence(activeSentenceIdx + 1);
+      }, 350);
     });
   }
 
   function toggleBookPlay() {
-    if (!bookAudio) return;
+    if (!activeBook) return;
     if (isBookPlaying) {
-      bookAudio.pause();
+      // 一時停止
       isBookPlaying = false;
+      clearTimeout(sentenceTimeout);
+      if (currentSentenceAudio) {
+        currentSentenceAudio.pause();
+      }
       updateBookPlayButtons(false);
     } else {
-      bookAudio.play();
+      // 再開
       isBookPlaying = true;
       updateBookPlayButtons(true);
+      if (currentSentenceAudio && currentSentenceAudio.currentTime > 0 && !currentSentenceAudio.ended) {
+        currentSentenceAudio.play();
+      } else {
+        playSentence(activeSentenceIdx);
+      }
     }
   }
 
@@ -560,24 +578,24 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function rewindBook() {
-    if (!bookAudio) return;
-    bookAudio.currentTime = Math.max(0, bookAudio.currentTime - 10);
+    if (!activeBook) return;
+    const prevIdx = Math.max(0, activeSentenceIdx - 1);
+    playSentence(prevIdx);
   }
 
   function forwardBook() {
-    if (!bookAudio || !activeBook) return;
-    const sentences = activeBook.sentences || [];
-    const stepSec = (bookAudio.duration || 60) / sentences.length;
-    bookAudio.currentTime = Math.min(bookAudio.duration - 1, bookAudio.currentTime + stepSec);
+    if (!activeBook) return;
+    const nextIdx = Math.min(activeBook.sentences.length - 1, activeSentenceIdx + 1);
+    playSentence(nextIdx);
   }
 
   function stopBookPlayback() {
-    if (bookAudio) {
-      bookAudio.pause();
-      bookAudio = null;
+    clearTimeout(sentenceTimeout);
+    if (currentSentenceAudio) {
+      currentSentenceAudio.pause();
+      currentSentenceAudio = null;
     }
     isBookPlaying = false;
-    clearInterval(bookSentenceInterval);
   }
 
   function backToBooksList() {

@@ -3,7 +3,7 @@
  * 入院中やWi-Fiのない環境でも、朗読小説やおはなしカードが完全動作するよう全リソースをキャッシュ
  */
 
-const CACHE_NAME = 'onetouch-plus-v1';
+const CACHE_NAME = 'onetouch-plus-v2';
 
 // オフラインキャッシュ対象の完全リスト
 const PRECACHE_ASSETS = [
@@ -18,12 +18,41 @@ const PRECACHE_ASSETS = [
   './js/drive.js',
   './js/scanner.js',
   
-  // 朗読小説 音声ファイル
-  './audio/books/meros.mp3',
-  './audio/books/chumon.mp3',
-  './audio/books/kumo.mp3',
-  './audio/books/zenigata.mp3',
-  './audio/books/botchan.mp3',
+  // 朗読小説 センテンス完全同期音声ファイル
+  './audio/books_sentence/botchan_0.mp3',
+  './audio/books_sentence/botchan_1.mp3',
+  './audio/books_sentence/botchan_2.mp3',
+  './audio/books_sentence/botchan_3.mp3',
+  './audio/books_sentence/botchan_4.mp3',
+  './audio/books_sentence/chumon_0.mp3',
+  './audio/books_sentence/chumon_1.mp3',
+  './audio/books_sentence/chumon_2.mp3',
+  './audio/books_sentence/chumon_3.mp3',
+  './audio/books_sentence/chumon_4.mp3',
+  './audio/books_sentence/chumon_5.mp3',
+  './audio/books_sentence/chumon_6.mp3',
+  './audio/books_sentence/kumo_0.mp3',
+  './audio/books_sentence/kumo_1.mp3',
+  './audio/books_sentence/kumo_2.mp3',
+  './audio/books_sentence/kumo_3.mp3',
+  './audio/books_sentence/kumo_4.mp3',
+  './audio/books_sentence/kumo_5.mp3',
+  './audio/books_sentence/kumo_6.mp3',
+  './audio/books_sentence/meros_0.mp3',
+  './audio/books_sentence/meros_1.mp3',
+  './audio/books_sentence/meros_2.mp3',
+  './audio/books_sentence/meros_3.mp3',
+  './audio/books_sentence/meros_4.mp3',
+  './audio/books_sentence/meros_5.mp3',
+  './audio/books_sentence/meros_6.mp3',
+  './audio/books_sentence/meros_7.mp3',
+  './audio/books_sentence/meros_8.mp3',
+  './audio/books_sentence/zenigata_0.mp3',
+  './audio/books_sentence/zenigata_1.mp3',
+  './audio/books_sentence/zenigata_2.mp3',
+  './audio/books_sentence/zenigata_3.mp3',
+  './audio/books_sentence/zenigata_4.mp3',
+  './audio/books_sentence/zenigata_5.mp3',
 
   // おはなしカード 音声ファイル（女性）
   './audio/voice/tea.mp3',
