@@ -692,7 +692,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnDemoLogin = document.getElementById('btn-demo-login');
   const btnGoogleLogout = document.getElementById('btn-google-logout');
   const btnManualSync = document.getElementById('btn-manual-sync');
-  const inputGoogleClientId = document.getElementById('input-google-client-id');
   const authUnregisteredView = document.getElementById('auth-unregistered-view');
   const authRegisteredView = document.getElementById('auth-registered-view');
 
@@ -709,7 +708,6 @@ document.addEventListener('DOMContentLoaded', () => {
   function openGoogleAuthModal() {
     if (googleAuthModal) {
       updateAuthModalView();
-      if (inputGoogleClientId) inputGoogleClientId.value = window.googleDriveSync.clientId;
       googleAuthModal.classList.remove('hidden');
     }
   }
@@ -734,13 +732,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // ワンクリックでGoogleログイン
   if (btnSaveClientIdLogin) {
     btnSaveClientIdLogin.addEventListener('click', (e) => {
       e.stopPropagation();
-      const val = inputGoogleClientId ? inputGoogleClientId.value.trim() : '';
-      if (val) {
-        window.googleDriveSync.setClientId(val);
-      }
       window.googleDriveSync.login();
     });
   }

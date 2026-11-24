@@ -3,9 +3,12 @@
  * 各ユーザー自身のGoogleドライブに設定やお気に入りデータを安全に保存（BYOSアーキテクチャ）
  */
 
+// OneTouch+ 公式 Google OAuth クライアントID（コード内に事前登録）
+const DEFAULT_CLIENT_ID = '';
+
 class GoogleDriveSync {
   constructor() {
-    this.clientId = ''; // Google Cloud Consoleで発行されるクライアントID
+    this.clientId = DEFAULT_CLIENT_ID;
     this.tokenClient = null;
     this.accessToken = null;
     this.userProfile = null;
@@ -16,8 +19,11 @@ class GoogleDriveSync {
     this.STORAGE_KEY_USER = 'onetouch_plus_user';
     this.STORAGE_KEY_CLIENT_ID = 'onetouch_plus_google_client_id';
 
-    // 保存されているクライアントIDがあれば復元
-    this.clientId = localStorage.getItem(this.STORAGE_KEY_CLIENT_ID) || '';
+    // ローカルストレージにカスタム設定があれば優先
+    const customId = localStorage.getItem(this.STORAGE_KEY_CLIENT_ID);
+    if (customId) {
+      this.clientId = customId;
+    }
 
     this.initUserFromStorage();
   }
@@ -65,11 +71,10 @@ class GoogleDriveSync {
     }
   }
 
-  // ログイン開始
+  // ログイン開始（ワンクリック）
   login() {
     if (!this.clientId) {
-      // クライアントID未設定の場合はデモ/設定案内モーダルを開く
-      this.openClientIdPrompt();
+      this.showSyncToast('⚠️ Google連携は準備中です。「デモログイン」でお試しいただけます');
       return;
     }
 
@@ -80,7 +85,7 @@ class GoogleDriveSync {
     if (this.tokenClient) {
       this.tokenClient.requestAccessToken({ prompt: 'consent' });
     } else {
-      this.openClientIdPrompt();
+      this.showSyncToast('⚠️ Google認証の初期化に失敗しました');
     }
   }
 
