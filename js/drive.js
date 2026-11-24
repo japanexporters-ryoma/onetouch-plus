@@ -4,7 +4,7 @@
  */
 
 // OneTouch+ 公式 Google OAuth クライアントID（コード内に事前登録）
-const DEFAULT_CLIENT_ID = '';
+const DEFAULT_CLIENT_ID = '521944364871-2lv5r7h5qrcvqq96d74su2htdm6rdqcr.apps.googleusercontent.com';
 
 class GoogleDriveSync {
   constructor() {
