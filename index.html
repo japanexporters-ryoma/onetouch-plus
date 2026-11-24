@@ -230,10 +230,29 @@
           </div>
         </div>
 
-        <!-- 大画面動画プレイヤー画面（最初は非表示） -->
-        <div id="video-theater-screen" class="hidden">
+        <!-- 2-B. 芸人の動画一覧選択画面（新設！） -->
+        <div id="video-list-screen" class="hidden">
           <div class="view-bar">
             <button class="btn-back scannable" data-action="back-to-comedians">◀ 芸人を選び直す</button>
+            <div class="theater-channel-badge" id="video-list-comedian-name">サンドウィッチマン</div>
+            <div class="header-hint-badge">どの動画を見ますか？</div>
+          </div>
+
+          <div id="video-list-loading" class="video-loading-box hidden">
+            <div class="loader-spinner"></div>
+            <p>面白い動画を探しています...</p>
+          </div>
+
+          <!-- たくさんの動画カードが並ぶグリッド -->
+          <div class="video-items-grid" id="video-items-container">
+            <!-- JSで動的にサムネイル付きの特大動画カードが挿入される -->
+          </div>
+        </div>
+
+        <!-- 2-C. 大画面動画プレイヤー画面 -->
+        <div id="video-theater-screen" class="hidden">
+          <div class="view-bar">
+            <button class="btn-back scannable" data-action="back-to-video-list">◀ 動画一覧に戻る</button>
             <div class="theater-channel-badge" id="theater-channel-name">サンドウィッチマン</div>
             <button class="btn-action scannable" data-action="theater-next">⏭️ つぎの動画へ</button>
           </div>
@@ -254,7 +273,7 @@
                 <span id="video-index-badge" class="index-badge">動画 1 / 10</span>
               </div>
               <div class="caption-right">
-                <button class="btn-theater-skip scannable" data-action="theater-next">⏭️ 次の動画（ボタンでスキップ）</button>
+                <button class="btn-theater-skip scannable" data-action="theater-next">⏭️ 次の動画へ（ボタンでスキップ）</button>
               </div>
             </div>
           </div>

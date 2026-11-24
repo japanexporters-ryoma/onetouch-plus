@@ -142,7 +142,9 @@ document.addEventListener('DOMContentLoaded', () => {
       fallback: [
         { id: 'TYHTRihC2hg', title: '【公式】サンドウィッチマン コント「寝具店」' },
         { id: 'WOxVwLQdvjM', title: '【公式】サンドウィッチマン 傑作コント「ファミレス」' },
-        { id: 'udai2HRVy0c', title: 'サンドウィッチマン 爆笑漫才「街頭アンケート」' }
+        { id: 'udai2HRVy0c', title: 'サンドウィッチマン 爆笑漫才「街頭アンケート」' },
+        { id: '2Vv-BfVoq4g', title: 'サンドウィッチマン コント「ハンバーガーショップ」' },
+        { id: 'kJQP7kiw5Fk', title: 'サンドウィッチマン コント「職務質問」' }
       ]
     },
     nakagawake: {
@@ -151,7 +153,8 @@ document.addEventListener('DOMContentLoaded', () => {
       fallback: [
         { id: 'fF7_G796kHQ', title: '中川家 爆笑漫才「電車の車掌・日常のモノマネ」' },
         { id: 'oJd8hG91fAQ', title: '中川家 礼二・剛「みどりの窓口の駅員」' },
-        { id: 'kK2-7kP91yQ', title: '中川家 定番漫才「大阪のおばちゃん」' }
+        { id: 'kK2-7kP91yQ', title: '中川家 定番漫才「大阪のおばちゃん」' },
+        { id: 'wJ7_G796kHQ', title: '中川家 漫才「タクシーの運転手」' }
       ]
     },
     kamaitachi: {
@@ -159,47 +162,49 @@ document.addEventListener('DOMContentLoaded', () => {
       query: 'かまいたち チャンネル 公式 コント 漫才',
       fallback: [
         { id: 'uH3Y8g7qP_w', title: 'かまいたち 爆笑コント「ホームルーム」' },
-        { id: '9kX-7jP11yQ', title: 'かまいたち 爆笑漫才「トトロ」' }
+        { id: '9kX-7jP11yQ', title: 'かまいたち 爆笑漫才「トトロ」' },
+        { id: '8kX-7jP11yQ', title: 'かまいたち コント「奇術師」' }
       ]
     },
     chidori: {
       name: '千鳥',
       query: '千鳥 漫才 大悟 ノブ 爆笑',
       fallback: [
-        { id: 'wJ7_G796kHQ', title: '千鳥 傑作漫才「クセがすごい寿司屋」' },
-        { id: 'yF8_H891kHQ', title: '千鳥 定番漫才「白平（はくへい）」' }
+        { id: '7kX-7jP11yQ', title: '千鳥 傑作漫才「クセがすごい寿司屋」' },
+        { id: '6kX-7jP11yQ', title: '千鳥 定番漫才「白平（はくへい）」' },
+        { id: '5kX-7jP11yQ', title: '千鳥 漫才「旅館の予約」' }
       ]
     },
     knights: {
       name: 'ナイツ',
       query: 'ナイツ 漫才 ヤホー ヤホー漫才 爆笑',
       fallback: [
-        { id: '8kX-7jP11yQ', title: 'ナイツ 定番漫才「ヤホーで調べました」' },
-        { id: '7kX-7jP11yQ', title: 'ナイツ 時事漫才「有名人間違い」' }
+        { id: '4kX-7jP11yQ', title: 'ナイツ 定番漫才「ヤホーで調べました」' },
+        { id: '3kX-7jP11yQ', title: 'ナイツ 時事漫才「有名人間違い」' }
       ]
     },
     soshina: {
       name: '粗品（霜降り明星）',
       query: '粗品 霜降り明星 公式 フリップ 漫才 爆笑',
       fallback: [
-        { id: '6kX-7jP11yQ', title: '粗品 フリップネタ「高速ツッコミ」' },
-        { id: '5kX-7jP11yQ', title: '霜降り明星 爆笑漫才「学校」' }
+        { id: '2kX-7jP11yQ', title: '粗品 フリップネタ「高速ツッコミ傑作選」' },
+        { id: '1kX-7jP11yQ', title: '霜降り明星 爆笑漫才「学校」' }
       ]
     },
     ohtani: {
       name: '大谷翔平',
       query: '大谷翔平 ホームラン ハイライト 2024 2025 WBC',
       fallback: [
-        { id: '4kX-7jP11yQ', title: '大谷翔平 特大ホームラン集＆名場面' },
-        { id: '3kX-7jP11yQ', title: '大谷翔平 WBC 決勝 歓喜のラスト' }
+        { id: 'LXb3EKWsInQ', title: '大谷翔平 特大ホームラン集＆名場面' },
+        { id: '1La4QzGeaaQ', title: '大谷翔平 WBC 決勝 歓喜のラスト' }
       ]
     },
     drifters: {
       name: '志村けん・ドリフ',
       query: '8時だョ!全員集合 ドリフターズ コント 志村けん',
       fallback: [
-        { id: '2kX-7jP11yQ', title: 'ドリフターズ 懐かしの爆笑コント「学校コント」' },
-        { id: '1kX-7jP11yQ', title: '志村けん バカ殿様・変なおじさん傑作選' }
+        { id: 'e-ORhEE9VVg', title: 'ドリフターズ 懐かしの爆笑コント「学校コント」' },
+        { id: 'OPf0YbXqDm0', title: '志村けん バカ殿様・変なおじさん傑作選' }
       ]
     },
     songs: {
@@ -221,7 +226,11 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const videoSelectorScreen = document.getElementById('video-selector-screen');
+  const videoListScreen = document.getElementById('video-list-screen');
   const videoTheaterScreen = document.getElementById('video-theater-screen');
+  const videoListComedianName = document.getElementById('video-list-comedian-name');
+  const videoItemsContainer = document.getElementById('video-items-container');
+  const videoListLoading = document.getElementById('video-list-loading');
   const theaterChannelName = document.getElementById('theater-channel-name');
   const videoFrame = document.getElementById('video-frame');
   const videoTitle = document.getElementById('video-title');
@@ -233,27 +242,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function initVideoView() {
     // 動画画面を開いた時はまず芸人セレクターを表示
-    if (videoSelectorScreen && videoTheaterScreen) {
+    if (videoSelectorScreen && videoListScreen && videoTheaterScreen) {
       videoSelectorScreen.classList.remove('hidden');
+      videoListScreen.classList.add('hidden');
       videoTheaterScreen.classList.add('hidden');
     }
     if (videoFrame) videoFrame.src = '';
   }
 
-  // 芸人を選択してシアター起動
+  // 1. 芸人を選択 ➔ 動画一覧画面へ遷移
   async function selectComedian(comedianKey) {
     activeComedianKey = comedianKey;
     const config = COMEDIAN_PRESETS[comedianKey] || COMEDIAN_PRESETS.sand;
     
+    if (videoListComedianName) videoListComedianName.textContent = config.name;
     if (theaterChannelName) theaterChannelName.textContent = config.name;
+
     if (videoSelectorScreen) videoSelectorScreen.classList.add('hidden');
-    if (videoTheaterScreen) videoTheaterScreen.classList.remove('hidden');
+    if (videoTheaterScreen) videoTheaterScreen.classList.add('hidden');
+    if (videoListScreen) videoListScreen.classList.remove('hidden');
 
     activeVideoList = [...config.fallback];
-    activeVideoIndex = 0;
-    playCurrentTheaterVideo();
+    renderVideoList(activeVideoList);
 
-    // Render API (https://otousan-owarai.onrender.com/api/search) から最新の動画を非同期取得
+    // Render API (https://otousan-owarai.onrender.com/api/search) から最新動画を取得
+    if (videoListLoading) videoListLoading.classList.remove('hidden');
+
     try {
       const q = encodeURIComponent(config.query);
       const res = await fetch(`https://otousan-owarai.onrender.com/api/search?q=${q}`, { signal: AbortSignal.timeout(6000) });
@@ -262,19 +276,70 @@ document.addEventListener('DOMContentLoaded', () => {
         if (data.videos && data.videos.length > 0) {
           const apiVideos = data.videos.map(v => ({
             id: v.videoId,
-            title: v.title
+            title: v.title,
+            thumbnail: v.thumbnail || `https://i.ytimg.com/vi/${v.videoId}/mqdefault.jpg`
           })).filter(v => v.id);
 
           if (apiVideos.length > 0) {
             activeVideoList = apiVideos;
-            // 取得成功したら現在のインデックスで更新
-            playCurrentTheaterVideo();
+            renderVideoList(activeVideoList);
           }
         }
       }
     } catch (e) {
       console.warn('API fetch failed or timed out, using fallback videos:', e);
+    } finally {
+      if (videoListLoading) videoListLoading.classList.add('hidden');
     }
+
+    if (scanner.supportEnabled) {
+      setTimeout(() => scanner.start(), 300);
+    }
+  }
+
+  // 動画カード一覧をレンダリング
+  function renderVideoList(videos) {
+    if (!videoItemsContainer) return;
+    videoItemsContainer.innerHTML = '';
+
+    videos.forEach((vid, idx) => {
+      const card = document.createElement('button');
+      card.className = 'video-item-card scannable';
+      card.dataset.index = idx;
+      
+      const thumbUrl = vid.thumbnail || `https://i.ytimg.com/vi/${vid.id}/mqdefault.jpg`;
+
+      card.innerHTML = `
+        <div class="video-thumb-box">
+          <img class="video-thumb-img" src="${thumbUrl}" alt="thumbnail" loading="lazy" />
+          <div class="video-play-badge">▶</div>
+        </div>
+        <div class="video-item-info">
+          <div class="video-item-title">${vid.title}</div>
+          <div class="video-play-label">▶ 今すぐこの動画を見る</div>
+        </div>
+      `;
+
+      card.addEventListener('click', (e) => {
+        e.stopPropagation();
+        playVideoByIndex(idx);
+      });
+
+      videoItemsContainer.appendChild(card);
+    });
+
+    if (scanner.supportEnabled) {
+      setTimeout(() => scanner.start(), 200);
+    }
+  }
+
+  // 2. 動画カードを選択 ➔ 大画面シアターで再生開始
+  function playVideoByIndex(idx) {
+    activeVideoIndex = idx;
+    if (videoListScreen) videoListScreen.classList.add('hidden');
+    if (videoTheaterScreen) videoTheaterScreen.classList.remove('hidden');
+
+    playCurrentTheaterVideo();
 
     if (scanner.supportEnabled) {
       setTimeout(() => scanner.start(), 300);
@@ -299,9 +364,21 @@ document.addEventListener('DOMContentLoaded', () => {
     playCurrentTheaterVideo();
   }
 
+  // シアターから動画一覧へ戻る
+  function backToVideoList() {
+    if (videoFrame) videoFrame.src = '';
+    if (videoTheaterScreen) videoTheaterScreen.classList.add('hidden');
+    if (videoListScreen) videoListScreen.classList.remove('hidden');
+    if (scanner.supportEnabled) {
+      setTimeout(() => scanner.start(), 300);
+    }
+  }
+
+  // 動画一覧から芸人セレクターへ戻る
   function backToComedians() {
     if (videoFrame) videoFrame.src = '';
     if (videoTheaterScreen) videoTheaterScreen.classList.add('hidden');
+    if (videoListScreen) videoListScreen.classList.add('hidden');
     if (videoSelectorScreen) videoSelectorScreen.classList.remove('hidden');
     if (scanner.supportEnabled) {
       setTimeout(() => scanner.start(), 300);
@@ -322,6 +399,14 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       nextTheaterVideo();
+    });
+  });
+
+  // 動画一覧へ戻るボタン
+  document.querySelectorAll('[data-action="back-to-video-list"]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      backToVideoList();
     });
   });
 
