@@ -22,10 +22,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // 画面ごとの個別処理
     if (viewName === 'video') {
       initVideoView();
-    } else if (viewName === 'fireworks') {
-      initFireworks();
-    } else if (viewName === 'slot') {
-      initSlot();
+    } else if (viewName === 'books') {
+      initBooksView();
     } else if (viewName === 'voice') {
       showMainVoiceMenu();
     }
@@ -419,186 +417,206 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ----------------------------------------------------
-  // 5. ワンボタン花火 (Canvas)
+  // 5. 朗読小説シアター（耳で聴く名作文学 & 複視配慮 特大1行表示）
   // ----------------------------------------------------
-  let fireworksCount = 0;
-  const countDisplay = document.getElementById('fireworks-count-num');
-  const canvas = document.getElementById('fireworks-canvas');
-  let ctx = null;
-  let particles = [];
-  let animId = null;
+  const booksSelectorScreen = document.getElementById('books-selector-screen');
+  const booksPlayerScreen = document.getElementById('books-player-screen');
+  const booksGrid = document.getElementById('books-grid');
+  const bookPlayingTitle = document.getElementById('book-playing-title');
+  const bookCurrentSentence = document.getElementById('book-current-sentence');
+  const bookProgressFill = document.getElementById('book-progress-fill');
+  const btnBookPlayToggle = document.getElementById('btn-book-play-toggle');
+  const btnBookCtrlCenter = document.getElementById('btn-book-ctrl-center');
 
-  function initFireworks() {
-    if (!canvas) return;
-    ctx = canvas.getContext('2d');
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
+  let activeBook = null;
+  let bookAudio = null;
+  let bookSentenceInterval = null;
+  let isBookPlaying = false;
 
-    if (!animId) {
-      loopFireworks();
+  function initBooksView() {
+    if (booksSelectorScreen && booksPlayerScreen) {
+      booksSelectorScreen.classList.remove('hidden');
+      booksPlayerScreen.classList.add('hidden');
     }
+    stopBookPlayback();
+    renderBooksGrid();
   }
 
-  function resizeCanvas() {
-    if (!canvas) return;
-    const parent = canvas.parentElement;
-    canvas.width = parent.clientWidth;
-    canvas.height = parent.clientHeight;
-  }
+  function renderBooksGrid() {
+    if (!booksGrid || !window.AUDIO_BOOKS) return;
+    booksGrid.innerHTML = '';
 
-  function launchFirework(x, y) {
-    if (!ctx) return;
-    fireworksCount++;
-    if (countDisplay) countDisplay.textContent = fireworksCount;
-    if (window.audioManager) window.audioManager.playFireworkSound();
+    window.AUDIO_BOOKS.forEach(book => {
+      const card = document.createElement('button');
+      card.className = 'book-card scannable';
+      card.innerHTML = `
+        <span class="b-icon">${book.icon}</span>
+        <div class="b-info">
+          <div class="b-title">${book.title}</div>
+          <div class="b-author">${book.author}</div>
+          <div class="b-genre">${book.genre}</div>
+        </div>
+      `;
 
-    const originX = x || Math.random() * (canvas.width - 200) + 100;
-    const originY = y || Math.random() * (canvas.height * 0.5) + (canvas.height * 0.15);
-
-    const colors = [
-      '#f43f5e', '#ec4899', '#d946ef', '#a855f7',
-      '#3b82f6', '#06b6d4', '#10b981', '#facc15', '#f97316'
-    ];
-    const baseColor = colors[Math.floor(Math.random() * colors.length)];
-
-    // 80個の火花パーティクルを生成
-    for (let i = 0; i < 90; i++) {
-      const angle = (Math.PI * 2 * i) / 90;
-      const speed = Math.random() * 6 + 2;
-      particles.push({
-        x: originX,
-        y: originY,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed,
-        color: baseColor,
-        alpha: 1,
-        decay: Math.random() * 0.018 + 0.012,
-        size: Math.random() * 3 + 2
+      card.addEventListener('click', (e) => {
+        e.stopPropagation();
+        selectBook(book);
       });
+
+      booksGrid.appendChild(card);
+    });
+
+    if (scanner.supportEnabled) {
+      setTimeout(() => scanner.start(), 200);
     }
   }
 
-  function loopFireworks() {
-    if (!ctx) return;
-    // 半透明ブラックで軌跡を残す
-    ctx.fillStyle = 'rgba(0, 2, 8, 0.2)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  function selectBook(book) {
+    activeBook = book;
+    if (booksSelectorScreen) booksSelectorScreen.classList.add('hidden');
+    if (booksPlayerScreen) booksPlayerScreen.classList.remove('hidden');
 
-    for (let i = particles.length - 1; i >= 0; i--) {
-      const p = particles[i];
-      p.x += p.vx;
-      p.y += p.vy;
-      p.vy += 0.05; // 重力
-      p.alpha -= p.decay;
+    if (bookPlayingTitle) {
+      bookPlayingTitle.textContent = `${book.title} - ${book.author}`;
+    }
 
-      if (p.alpha <= 0) {
-        particles.splice(i, 1);
-        continue;
+    startBookPlayback(book);
+
+    if (scanner.supportEnabled) {
+      setTimeout(() => scanner.start(), 300);
+    }
+  }
+
+  function startBookPlayback(book) {
+    stopBookPlayback();
+
+    bookAudio = new Audio(book.audioSrc);
+    isBookPlaying = true;
+    updateBookPlayButtons(true);
+
+    let currentSentenceIdx = 0;
+    const sentences = book.sentences || ['朗読を開始します...'];
+    
+    if (bookCurrentSentence) {
+      bookCurrentSentence.textContent = sentences[0];
+    }
+
+    bookAudio.play().catch(e => console.warn('Audio play error:', e));
+
+    // 音声の進行に合わせて一文ずつ表示を切り替える
+    bookAudio.addEventListener('timeupdate', () => {
+      if (!bookAudio.duration) return;
+      const progress = (bookAudio.currentTime / bookAudio.duration) * 100;
+      if (bookProgressFill) {
+        bookProgressFill.style.width = `${progress}%`;
       }
 
-      ctx.save();
-      ctx.globalAlpha = p.alpha;
-      ctx.fillStyle = p.color;
-      ctx.shadowBlur = 10;
-      ctx.shadowColor = p.color;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-    }
+      // 時間比率でセンテンスを更新
+      const targetIdx = Math.min(
+        sentences.length - 1,
+        Math.floor((bookAudio.currentTime / bookAudio.duration) * sentences.length)
+      );
 
-    animId = requestAnimationFrame(loopFireworks);
-  }
-
-  // 花火画面全体がクリックされたら打ち上げ
-  const fireworksArea = document.getElementById('fireworks-canvas-wrapper');
-  if (fireworksArea) {
-    fireworksArea.addEventListener('click', (e) => {
-      // 戻るボタンのクリックは邪魔しない
-      if (e.target.closest('.btn-back')) return;
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX ? e.clientX - rect.left : undefined;
-      const y = e.clientY ? e.clientY - rect.top : undefined;
-      launchFirework(x, y);
-    });
-  }
-
-  // ----------------------------------------------------
-  // 6. ラッキースロット
-  // ----------------------------------------------------
-  const slotSymbols = ['🍒', '⭐', '🔔', '🍉', '🍋', '7️⃣'];
-  let isSlotRolling = false;
-  let slotInterval = null;
-  let winCount = 0;
-  const reel1 = document.getElementById('reel-1');
-  const reel2 = document.getElementById('reel-2');
-  const reel3 = document.getElementById('reel-3');
-  const slotMsg = document.getElementById('slot-message');
-  const winCountDisplay = document.getElementById('slot-win-count');
-  const btnSlotAction = document.getElementById('btn-slot-action');
-
-  function initSlot() {
-    isSlotRolling = false;
-    clearInterval(slotInterval);
-    if (slotMsg) slotMsg.textContent = 'ボタンを押してスタート！';
-    if (btnSlotAction) btnSlotAction.textContent = '▶ スタート';
-  }
-
-  function triggerSlot() {
-    if (!isSlotRolling) {
-      // 回転開始
-      isSlotRolling = true;
-      if (btnSlotAction) btnSlotAction.textContent = '⏹️ ストップ！';
-      if (slotMsg) slotMsg.textContent = '回転中... もう一度ボタンを押して止めよう！';
-      
-      slotInterval = setInterval(() => {
-        if (reel1) reel1.textContent = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
-        if (reel2) reel2.textContent = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
-        if (reel3) reel3.textContent = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
-      }, 70);
-    } else {
-      // 停止
-      isSlotRolling = false;
-      clearInterval(slotInterval);
-      if (btnSlotAction) btnSlotAction.textContent = '▶ もう一度スタート';
-
-      // 50%の確率で必ず揃う（お父さんの成功体験と楽しさを最優先！）
-      const isLucky = Math.random() < 0.55;
-      let finalSymbol = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
-
-      if (isLucky) {
-        if (reel1) reel1.textContent = finalSymbol;
-        if (reel2) reel2.textContent = finalSymbol;
-        if (reel3) reel3.textContent = finalSymbol;
-
-        winCount++;
-        if (winCountDisplay) winCountDisplay.textContent = winCount;
-        if (slotMsg) slotMsg.innerHTML = '🎉 <span style="color:#facc15">おめでとう！大当たり！</span> 🎉';
-        if (window.audioManager) window.audioManager.playFanfare();
-      } else {
-        // 通常の停止結果
-        const s1 = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
-        const s2 = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
-        let s3 = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
-        if (s1 === s2 && s2 === s3) {
-          s3 = (s3 === '🍒') ? '⭐' : '🍒';
+      if (targetIdx !== currentSentenceIdx) {
+        currentSentenceIdx = targetIdx;
+        if (bookCurrentSentence) {
+          bookCurrentSentence.style.opacity = '0';
+          bookCurrentSentence.style.transform = 'translateY(8px)';
+          setTimeout(() => {
+            bookCurrentSentence.textContent = sentences[currentSentenceIdx];
+            bookCurrentSentence.style.opacity = '1';
+            bookCurrentSentence.style.transform = 'translateY(0)';
+          }, 200);
         }
-        if (reel1) reel1.textContent = s1;
-        if (reel2) reel2.textContent = s2;
-        if (reel3) reel3.textContent = s3;
-
-        if (slotMsg) slotMsg.textContent = 'おしい！次は揃うかな？';
-        if (window.audioManager) window.audioManager.playSelectSound();
       }
+    });
+
+    bookAudio.addEventListener('ended', () => {
+      isBookPlaying = false;
+      updateBookPlayButtons(false);
+      if (bookCurrentSentence) {
+        bookCurrentSentence.textContent = '【おわり】ボタンを押すと最初から再生します';
+      }
+    });
+  }
+
+  function toggleBookPlay() {
+    if (!bookAudio) return;
+    if (isBookPlaying) {
+      bookAudio.pause();
+      isBookPlaying = false;
+      updateBookPlayButtons(false);
+    } else {
+      bookAudio.play();
+      isBookPlaying = true;
+      updateBookPlayButtons(true);
     }
   }
 
-  if (btnSlotAction) {
-    btnSlotAction.addEventListener('click', (e) => {
-      e.stopPropagation();
-      triggerSlot();
-    });
+  function updateBookPlayButtons(playing) {
+    const text = playing ? '⏸️ 一時停止' : '▶️ 再開する';
+    if (btnBookPlayToggle) btnBookPlayToggle.textContent = text;
+    if (btnBookCtrlCenter) btnBookCtrlCenter.textContent = text;
   }
+
+  function rewindBook() {
+    if (!bookAudio) return;
+    bookAudio.currentTime = Math.max(0, bookAudio.currentTime - 10);
+  }
+
+  function forwardBook() {
+    if (!bookAudio || !activeBook) return;
+    const sentences = activeBook.sentences || [];
+    const stepSec = (bookAudio.duration || 60) / sentences.length;
+    bookAudio.currentTime = Math.min(bookAudio.duration - 1, bookAudio.currentTime + stepSec);
+  }
+
+  function stopBookPlayback() {
+    if (bookAudio) {
+      bookAudio.pause();
+      bookAudio = null;
+    }
+    isBookPlaying = false;
+    clearInterval(bookSentenceInterval);
+  }
+
+  function backToBooksList() {
+    stopBookPlayback();
+    if (booksPlayerScreen) booksPlayerScreen.classList.add('hidden');
+    if (booksSelectorScreen) booksSelectorScreen.classList.remove('hidden');
+    if (scanner.supportEnabled) {
+      setTimeout(() => scanner.start(), 300);
+    }
+  }
+
+  // 朗読プレイヤーボタンイベント
+  document.querySelectorAll('[data-action="book-toggle-play"]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleBookPlay();
+    });
+  });
+
+  document.querySelectorAll('[data-action="book-rewind"]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      rewindBook();
+    });
+  });
+
+  document.querySelectorAll('[data-action="book-forward"]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      forwardBook();
+    });
+  });
+
+  document.querySelectorAll('[data-action="back-to-books-list"]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      backToBooksList();
+    });
+  });
 
   // ----------------------------------------------------
   // 7. おはなしカード（意思伝達・ボイス）＆ 痛い部位選択

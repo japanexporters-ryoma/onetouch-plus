@@ -97,6 +97,19 @@ body {
   border: 1px solid #10b981;
 }
 
+.offline-badge {
+  background-color: #1e1b4b;
+  color: #a5b4fc;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  border: 1px solid #6366f1;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .header-right {
   display: flex;
   align-items: center;
@@ -338,12 +351,12 @@ body {
 }
 
 /* カード固有アクセント */
-.color-video { border-color: #3b82f6; }
-.color-video .card-icon { background: rgba(59, 130, 246, 0.2); }
-.color-fireworks { border-color: #ec4899; }
-.color-fireworks .card-icon { background: rgba(236, 72, 153, 0.2); }
-.color-slot { border-color: #eab308; }
-.color-slot .card-icon { background: rgba(234, 179, 8, 0.2); }
+.color-video { border-color: #f59e0b; }
+.color-video .card-icon { background: rgba(245, 158, 11, 0.2); }
+
+.color-books { border-color: #8b5cf6; }
+.color-books .card-icon { background: rgba(139, 92, 246, 0.2); }
+
 .color-voice { border-color: #10b981; }
 .color-voice .card-icon { background: rgba(16, 185, 129, 0.2); }
 
@@ -699,123 +712,169 @@ body {
 }
 
 /* ========================================================
-   3. 花火画面
+   3. 朗読小説シアター（複視・弱視配慮 特大1行表示）
    ======================================================== */
-.view-bar-overlay {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  right: 20px;
-  z-index: 20;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.fireworks-count {
-  background: rgba(0, 0, 0, 0.6);
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-size: 1.1rem;
-  color: #f472b6;
-  border: 1px solid #ec4899;
-}
-
-.fireworks-area {
-  position: relative;
+.books-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
   flex: 1;
-  background: radial-gradient(circle at bottom, #090d16 0%, #000208 100%);
+}
+
+@media (max-width: 768px) {
+  .books-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.book-card {
+  display: flex;
+  align-items: center;
+  min-height: 140px;
+  padding: 24px 22px;
+  background-color: var(--card-bg);
+  border: 4px solid #8b5cf6;
+  border-radius: 24px;
+  color: var(--text-main);
+  text-align: left;
+  cursor: pointer;
+  gap: 20px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  transition: all 0.2s ease;
+}
+
+.b-icon {
+  font-size: 3.5rem;
+  background: rgba(139, 92, 246, 0.2);
+  width: 85px;
+  height: 85px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 20px;
-  overflow: hidden;
-  min-height: 480px;
+  flex-shrink: 0;
 }
 
-#fireworks-canvas {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-
-.fireworks-hint {
-  position: absolute;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  color: rgba(255, 255, 255, 0.7);
-  background: rgba(0, 0, 0, 0.6);
-  padding: 8px 24px;
-  border-radius: 9999px;
-  font-size: 1rem;
-  font-weight: 700;
-  pointer-events: none;
-}
-
-/* ========================================================
-   4. スロット画面
-   ======================================================== */
-.slot-score {
-  font-size: 1.2rem;
-  color: #fbbf24;
-}
-
-.slot-container {
+.b-info {
   display: flex;
   flex-direction: column;
+  gap: 6px;
+}
+
+.b-title {
+  font-size: 1.7rem;
+  font-weight: 900;
+  color: #fff;
+}
+
+.b-author {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #c4b5fd;
+}
+
+.b-genre {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
+/* 朗読プレイヤー画面 */
+.book-playing-badge {
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  color: #fff;
+  font-weight: 900;
+  font-size: 1.3rem;
+  padding: 10px 24px;
+  border-radius: 16px;
+  border: 2px solid #a78bfa;
+}
+
+.book-reader-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  background-color: #030712; /* 完全な漆黒で文字を際立たせる */
+  border-radius: 24px;
+  border: 4px solid #4c1d95;
+  padding: 30px;
+  justify-content: space-between;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+  min-height: 440px;
+}
+
+/* 【最重要】文字がブレて二重に見える方でもくっきり読める超特大1行表示 */
+.book-sentence-display {
+  display: flex;
   align-items: center;
   justify-content: center;
   flex: 1;
-  background-color: var(--card-bg);
-  border-radius: 24px;
-  padding: 30px;
-  border: 3px solid var(--card-border);
+  text-align: center;
+  padding: 20px;
 }
 
-.slot-machine {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 28px;
+.large-sentence {
+  font-size: 2.5rem; /* 超特大サイズ！ */
+  font-weight: 900;
+  line-height: 1.6;
+  color: #fde047; /* 目に優しくコントラストの高い黄金イエロー */
+  text-shadow: 0 0 20px rgba(253, 224, 71, 0.3);
+  letter-spacing: 0.05em;
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
-.reel-box {
-  width: 130px;
-  height: 160px;
-  background-color: #0f172a;
-  border: 4px solid #facc15;
-  border-radius: 20px;
+@media (max-width: 768px) {
+  .large-sentence {
+    font-size: 1.8rem;
+  }
+}
+
+.book-progress-bar-wrap {
+  width: 100%;
+  height: 10px;
+  background-color: #1e1b4b;
+  border-radius: 9999px;
+  overflow: hidden;
+  margin: 16px 0;
+}
+
+.book-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #8b5cf6, #f59e0b);
+  border-radius: 9999px;
+  transition: width 0.3s linear;
+}
+
+.book-controls-bar {
   display: flex;
+  gap: 16px;
   align-items: center;
   justify-content: center;
-  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
 }
 
-.reel {
-  font-size: 5rem;
-  transition: transform 0.1s ease;
+.btn-book-ctrl {
+  background-color: #1e293b;
+  color: #e2e8f0;
+  border: 3px solid #475569;
+  min-height: 70px;
+  padding: 12px 24px;
+  border-radius: 18px;
+  font-size: 1.15rem;
+  font-weight: 800;
+  cursor: pointer;
 }
 
-.slot-message {
+.btn-book-ctrl-main {
+  background: linear-gradient(135deg, #7c3aed, #5b21b6);
+  color: white;
+  border: 4px solid #a78bfa;
+  min-height: 85px;
+  min-width: 240px;
+  padding: 14px 36px;
+  border-radius: 22px;
   font-size: 1.5rem;
   font-weight: 900;
-  color: #38bdf8;
-  margin-bottom: 24px;
-  min-height: 2em;
-  text-align: center;
-}
-
-.btn-slot {
-  background: linear-gradient(135deg, #ef4444, #b91c1c);
-  color: white;
-  border: 4px solid #f87171;
-  min-height: 110px;
-  min-width: 320px;
-  width: 80%;
-  max-width: 500px;
-  padding: 20px 48px;
-  border-radius: 28px;
-  font-size: 1.8rem;
-  font-weight: 900;
   cursor: pointer;
-  box-shadow: 0 10px 28px rgba(239, 68, 68, 0.45);
+  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.45);
 }
 
 /* ========================================================

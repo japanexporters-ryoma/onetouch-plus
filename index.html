@@ -30,6 +30,7 @@
       <div class="header-left">
         <h1 class="app-title"><span class="title-logo">👆</span> OneTouch<span class="title-plus">+</span></h1>
         <div id="input-status-badge" class="status-badge">ボタン入力受付中</div>
+        <div id="offline-status-badge" class="offline-badge" title="インターネットがなくても動きます">📶 オフラインOK</div>
       </div>
       <div class="header-right">
         <!-- Google ドライブ保存・ログインボタン -->
@@ -110,27 +111,20 @@
             </div>
           </button>
 
-          <button class="menu-card scannable color-fireworks" data-view="fireworks">
-            <div class="card-icon">🎆</div>
+          <!-- 新設：朗読小説シアター（スロットと花火の代わり） -->
+          <button class="menu-card scannable color-books" data-view="books">
+            <div class="card-icon">🎧</div>
             <div class="card-body">
-              <div class="card-title">ワンボタン花火</div>
-              <div class="card-desc">押すたびに夜空に大輪の花火が咲く</div>
+              <div class="card-title">朗読小説シアター</div>
+              <div class="card-desc">走れメロス・銭形平次など名作を耳で楽しむ（完全オフライン対応）</div>
             </div>
           </button>
 
-          <button class="menu-card scannable color-slot" data-view="slot">
-            <div class="card-icon">🎰</div>
-            <div class="card-body">
-              <div class="card-title">ラッキースロット</div>
-              <div class="card-desc">タイミングよく押して絵柄を揃えよう</div>
-            </div>
-          </button>
-
-          <button class="menu-card scannable color-voice" data-view="voice">
+          <button class="menu-card scannable color-voice" data-view="voice" style="grid-column: span 2;">
             <div class="card-icon">🗣️</div>
             <div class="card-body">
               <div class="card-title">おはなしカード</div>
-              <div class="card-desc">「お茶」「ありがとう」などを声で伝える</div>
+              <div class="card-desc">「お茶」「ありがとう」「痛いところ」などを声で伝える</div>
             </div>
           </button>
         </div>
@@ -280,45 +274,51 @@
         </div>
       </section>
 
-      <!-- 3. ワンボタン花火画面 -->
-      <section id="view-fireworks" class="view-section">
-        <div class="view-bar-overlay">
-          <button class="btn-back scannable" data-action="back-home">◀ ホームへ戻る</button>
-          <span class="fireworks-count">打ち上げ数: <strong id="fireworks-count-num">0</strong> 発</span>
-        </div>
-        <div class="fireworks-area" id="fireworks-canvas-wrapper">
-          <canvas id="fireworks-canvas"></canvas>
-          <div class="fireworks-hint">ボタンを押すと花火が打ち上がります！</div>
-        </div>
-      </section>
-
-      <!-- 4. ラッキースロット画面 -->
-      <section id="view-slot" class="view-section">
-        <div class="view-bar">
-          <button class="btn-back scannable" data-action="back-home">◀ ホームへ戻る</button>
-          <div class="view-title">ラッキースロット</div>
-          <div class="slot-score">あたり: <strong id="slot-win-count">0</strong> 回</div>
-        </div>
-
-        <div class="slot-container">
-          <div class="slot-machine">
-            <div class="reel-box">
-              <div class="reel" id="reel-1">🍒</div>
-            </div>
-            <div class="reel-box">
-              <div class="reel" id="reel-2">⭐</div>
-            </div>
-            <div class="reel-box">
-              <div class="reel" id="reel-3">7️⃣</div>
-            </div>
+      <!-- 3. 新設：朗読小説シアター画面（スロット・花火の代わり） -->
+      <section id="view-books" class="view-section">
+        <!-- 3-A. 作品選択画面 -->
+        <div id="books-selector-screen">
+          <div class="view-bar">
+            <button class="btn-back scannable" data-action="back-home">◀ ホームへ戻る</button>
+            <div class="view-title">朗読小説シアター</div>
+            <div class="header-hint-badge">どの小説を聴きますか？</div>
           </div>
 
-          <div id="slot-message" class="slot-message">ボタンを押してスタート！</div>
+          <div class="books-grid" id="books-grid">
+            <!-- JSで動的に作品カードが生成される -->
+          </div>
+        </div>
 
-          <div class="slot-controls">
-            <button id="btn-slot-action" class="btn-slot scannable" data-action="slot-trigger">
-              ▶ スタート / ストップ
+        <!-- 3-B. 朗読プレイヤー画面（超特大1行表示・弱視・複視配慮） -->
+        <div id="books-player-screen" class="hidden">
+          <div class="view-bar">
+            <button class="btn-back scannable" data-action="back-to-books-list">◀ 本を選び直す</button>
+            <div class="book-playing-badge" id="book-playing-title">走れメロス - 太宰 治</div>
+            <button class="btn-action scannable" id="btn-book-play-toggle" data-action="book-toggle-play">
+              ⏸️ 一時停止
             </button>
+          </div>
+
+          <!-- 超特大1行テキスト表示エリア（文字が二重に見える方でもくっきり読める） -->
+          <div class="book-reader-container">
+            <div class="book-sentence-display">
+              <div id="book-current-sentence" class="large-sentence">
+                物語を読み込んでいます...
+              </div>
+            </div>
+            
+            <div class="book-progress-bar-wrap">
+              <div id="book-progress-fill" class="book-progress-fill" style="width: 0%;"></div>
+            </div>
+
+            <!-- 下部ワンタッチ操作バー -->
+            <div class="book-controls-bar">
+              <button class="btn-book-ctrl scannable" data-action="book-rewind">⏪ 10秒戻る</button>
+              <button class="btn-book-ctrl-main scannable" data-action="book-toggle-play" id="btn-book-ctrl-center">
+                ⏯️ 停止 / 再開
+              </button>
+              <button class="btn-book-ctrl scannable" data-action="book-forward">⏭️ つぎの文へ</button>
+            </div>
           </div>
         </div>
       </section>
@@ -487,8 +487,51 @@
 
   <!-- スクリプト読み込み -->
   <script src="js/audio.js"></script>
+  <script src="js/books-data.js"></script>
   <script src="js/drive.js"></script>
   <script src="js/scanner.js"></script>
   <script src="js/app.js"></script>
+  <!-- Service Worker 登録（完全オフライン対応） -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then((reg) => {
+            console.log('OneTouch+ Service Worker registered:', reg.scope);
+            const badge = document.getElementById('offline-status-badge');
+            if (badge) {
+              badge.textContent = '📶 オフラインOK';
+              badge.style.borderColor = '#10b981';
+              badge.style.color = '#6ee7b7';
+            }
+          })
+          .catch((err) => console.warn('Service Worker registration failed:', err));
+      });
+
+      // オンライン・オフライン検知
+      window.addEventListener('offline', () => {
+        const badge = document.getElementById('offline-status-badge');
+        if (badge) {
+          badge.textContent = '📴 オフライン動作中';
+          badge.style.backgroundColor = '#7f1d1d';
+          badge.style.borderColor = '#f87171';
+          badge.style.color = '#fecaca';
+        }
+      });
+
+      window.addEventListener('online', () => {
+        const badge = document.getElementById('offline-status-badge');
+        if (badge) {
+          badge.textContent = '📶 オンライン復帰';
+          setTimeout(() => {
+            badge.textContent = '📶 オフラインOK';
+            badge.style.backgroundColor = '#1e1b4b';
+            badge.style.borderColor = '#6366f1';
+            badge.style.color = '#a5b4fc';
+          }, 3000);
+        }
+      });
+    }
+  </script>
 </body>
 </html>
