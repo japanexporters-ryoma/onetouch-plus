@@ -3,7 +3,7 @@
  * 入院中やWi-Fiのない環境でも、朗読小説やおはなしカードが完全動作するよう全リソースをキャッシュ
  */
 
-const CACHE_NAME = 'onetouch-plus-v2';
+const CACHE_NAME = 'onetouch-plus-v3';
 
 // オフラインキャッシュ対象の完全リスト
 const PRECACHE_ASSETS = [
@@ -47,6 +47,21 @@ const PRECACHE_ASSETS = [
   './audio/books_sentence/meros_6.mp3',
   './audio/books_sentence/meros_7.mp3',
   './audio/books_sentence/meros_8.mp3',
+  './audio/books_sentence/meros_9.mp3',
+  './audio/books_sentence/meros_10.mp3',
+  './audio/books_sentence/meros_11.mp3',
+  './audio/books_sentence/meros_12.mp3',
+  './audio/books_sentence/meros_13.mp3',
+  './audio/books_sentence/meros_14.mp3',
+  './audio/books_sentence/meros_15.mp3',
+  './audio/books_sentence/meros_16.mp3',
+  './audio/books_sentence/meros_17.mp3',
+  './audio/books_sentence/meros_18.mp3',
+  './audio/books_sentence/meros_19.mp3',
+  './audio/books_sentence/meros_20.mp3',
+  './audio/books_sentence/meros_21.mp3',
+  './audio/books_sentence/meros_22.mp3',
+  './audio/books_sentence/meros_23.mp3',
   './audio/books_sentence/zenigata_0.mp3',
   './audio/books_sentence/zenigata_1.mp3',
   './audio/books_sentence/zenigata_2.mp3',
@@ -115,23 +130,28 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// オフライン優先（Cache First, Network Fallback）
+// リクエスト種別に応じた戦略（プログラムファイルは Network First、音声・画像等は Cache First）
 self.addEventListener('fetch', (event) => {
-  // YouTube動画のストリーミングやGoogle APIはネットワーク優先
+  // YouTube動画のストリーミングやGoogle API・外部フォントはネットワーク優先
   if (event.request.url.includes('youtube.com') || 
       event.request.url.includes('googlevideo.com') ||
       event.request.url.includes('googleapis.com') ||
-      event.request.url.includes('accounts.google.com')) {
+      event.request.url.includes('accounts.google.com') ||
+      event.request.url.includes('gstatic.com')) {
     return;
   }
 
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      return fetch(event.request).then((networkResponse) => {
-        // 成功したレスポンスを動的キャッシュ
+  const url = new URL(event.request.url);
+  const isCodeAsset = url.pathname.endsWith('.html') || 
+                      url.pathname.endsWith('.js') || 
+                      url.pathname.endsWith('.css') || 
+                      url.pathname.endsWith('/') || 
+                      url.pathname === '';
+
+  if (isCodeAsset) {
+    // プログラムコード: Network First (最新の修正を即座に反映、オフライン時はキャッシュ)
+    event.respondWith(
+      fetch(event.request).then((networkResponse) => {
         if (networkResponse && networkResponse.status === 200) {
           const responseClone = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => {
@@ -140,9 +160,26 @@ self.addEventListener('fetch', (event) => {
         }
         return networkResponse;
       }).catch(() => {
-        // オフライン時のフォールバック
-        return caches.match('./index.html');
-      });
-    })
-  );
+        return caches.match(event.request).then((cached) => cached || caches.match('./index.html'));
+      })
+    );
+  } else {
+    // 音声・画像・静的アセット: Cache First (高速レスポンス & オフライン優先)
+    event.respondWith(
+      caches.match(event.request).then((cachedResponse) => {
+        if (cachedResponse) {
+          return cachedResponse;
+        }
+        return fetch(event.request).then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseClone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseClone);
+            });
+          }
+          return networkResponse;
+        });
+      })
+    );
+  }
 });

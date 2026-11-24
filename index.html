@@ -491,13 +491,15 @@
   <script src="js/drive.js"></script>
   <script src="js/scanner.js"></script>
   <script src="js/app.js"></script>
-  <!-- Service Worker 登録（完全オフライン対応） -->
+  <!-- Service Worker 登録（完全オフライン対応 & 自動更新） -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js')
           .then((reg) => {
             console.log('OneTouch+ Service Worker registered:', reg.scope);
+            // 最新コードを常にチェック
+            reg.update();
             const badge = document.getElementById('offline-status-badge');
             if (badge) {
               badge.textContent = '📶 オフラインOK';

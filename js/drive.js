@@ -19,10 +19,13 @@ class GoogleDriveSync {
     this.STORAGE_KEY_USER = 'onetouch_plus_user';
     this.STORAGE_KEY_CLIENT_ID = 'onetouch_plus_google_client_id';
 
-    // ローカルストレージにカスタム設定があれば優先
+    // ローカルストレージに有効なカスタム設定がある場合のみ使用（空や無効値なら公式IDを維持）
     const customId = localStorage.getItem(this.STORAGE_KEY_CLIENT_ID);
-    if (customId) {
-      this.clientId = customId;
+    if (customId && customId.trim().length > 10) {
+      this.clientId = customId.trim();
+    } else {
+      this.clientId = DEFAULT_CLIENT_ID;
+      localStorage.removeItem(this.STORAGE_KEY_CLIENT_ID);
     }
 
     this.initUserFromStorage();
@@ -80,8 +83,25 @@ class GoogleDriveSync {
 
   // ログイン開始（ワンクリック）
   login() {
-    if (!this.clientId) {
-      this.showSyncToast('⚠️ Google連携は準備中です。「デモログイン」でお試しいただけます');
+    if (!this.clientId || this.clientId.trim().length <= 10) {
+      this.clientId = DEFAULT_CLIENT_ID;
+    }
+
+    if (!window.google || !window.google.accounts || !window.google.accounts.oauth2) {
+      this.showSyncToast('⏳ Google認証ライブラリを接続中…');
+      // 少し待ってから再初期化して実行
+      setTimeout(() => {
+        if (window.google && window.google.accounts && window.google.accounts.oauth2) {
+          this.initTokenClient();
+          if (this.tokenClient) {
+            this.tokenClient.requestAccessToken({ prompt: 'consent' });
+          } else {
+            this.showSyncToast('⚠️ Google認証の開始に失敗しました。再読み込みをお試しください');
+          }
+        } else {
+          this.showSyncToast('⚠️ Google認証サービスに接続できませんでした。通信環境をご確認ください');
+        }
+      }, 1200);
       return;
     }
 
