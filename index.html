@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>OneTouch+（ワンタッチプラス）- ボタンひとつで楽しさと笑顔をプラス</title>
+  <meta name="description" content="ナースコールボタンやワンタップで動画やお笑い、ゲーム、意思伝達が楽しめる介護・ベッドサイド向け支援ポータル">
+  <meta name="theme-color" content="#2563eb">
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800;900&display=swap" rel="stylesheet">
+  <!-- Google Identity Services -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+  <!-- クロスヘア走査線オーバーレイ -->
+  <div id="crosshair-overlay" class="crosshair-overlay hidden">
+    <div id="scan-line-horizontal" class="scan-line horizontal"></div>
+    <div id="scan-line-vertical" class="scan-line vertical"></div>
+    <div id="crosshair-target" class="crosshair-target hidden"></div>
+  </div>
+
+  <!-- メインコンテナ -->
+  <div class="app-container">
+    <!-- ヘッダー -->
+    <header class="app-header">
+      <div class="header-left">
+        <h1 class="app-title"><span class="title-logo">👆</span> OneTouch<span class="title-plus">+</span></h1>
+        <div id="input-status-badge" class="status-badge">ボタン入力受付中</div>
+      </div>
+      <div class="header-right">
+        <!-- Google ドライブ保存・ログインボタン -->
+        <button id="btn-google-auth" class="btn-google-auth" title="Googleアカウントで設定やデータを保存">
+          <svg class="google-icon" viewBox="0 0 24 24" width="20" height="20">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+          </svg>
+          <span>Googleで保存</span>
+        </button>
+
+        <button id="btn-support-toggle" class="btn-support" data-action="toggle-support">🖐️ サポートOFF（通常タッチ）</button>
+        <button id="btn-settings-toggle" class="btn-sub scannable" data-action="toggle-settings">⚙️ 設定</button>
+      </div>
+    </header>
+
+    <!-- 設定モーダル/パネル -->
+    <div id="settings-panel" class="settings-panel hidden">
+      <div class="settings-content">
+        <h2>操作・スキャン設定</h2>
+        
+        <div class="setting-item">
+          <label>選択モード</label>
+          <div class="setting-options">
+            <button class="btn-opt scannable active" data-setting="mode" data-val="item">① 項目スキャン（順次枠移動）</button>
+            <button class="btn-opt scannable" data-setting="mode" data-val="crosshair">② 十字線スキャン（上下左右のクロス）</button>
+          </div>
+        </div>
+
+        <div class="setting-item">
+          <label>スキャン速度（5段階）</label>
+          <div class="setting-options speed-grid">
+            <button class="btn-opt scannable" data-setting="speed" data-val="v-slowest">① 超ゆっくり（約5秒間隔 / 走査 最遅）</button>
+            <button class="btn-opt scannable" data-setting="speed" data-val="v-slow">② ゆっくり（約3.5秒間隔 / 走査 遅）</button>
+            <button class="btn-opt scannable active" data-setting="speed" data-val="v-normal">③ ふつう（約2.2秒間隔 / 走査 中）</button>
+            <button class="btn-opt scannable" data-setting="speed" data-val="v-fast">④ やや速い（約1.5秒間隔 / 走査 やや速）</button>
+            <button class="btn-opt scannable" data-setting="speed" data-val="v-fastest">⑤ 速い（約1.0秒間隔 / 走査 速）</button>
+          </div>
+        </div>
+
+        <div class="setting-item">
+          <label>おはなしカードの声の種類</label>
+          <div class="setting-options">
+            <button class="btn-opt scannable active" data-setting="voice-type" data-val="female">🌸 やさしい声（女性・ななみ）</button>
+            <button class="btn-opt scannable" data-setting="voice-type" data-val="male">👔 おちついた声（男性・けいた）</button>
+          </div>
+        </div>
+
+        <div class="setting-item">
+          <label>効果音</label>
+          <div class="setting-options">
+            <button class="btn-opt scannable active" data-setting="sound" data-val="on">音を鳴らす 🔊</button>
+            <button class="btn-opt scannable" data-setting="sound" data-val="off">消音 🔇</button>
+          </div>
+        </div>
+
+        <div class="settings-actions">
+          <button class="btn-primary scannable" data-action="close-settings">設定をとじる</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- メインコンテンツ領域 -->
+    <main class="app-main">
+      <!-- 1. ホーム画面（メニュー） -->
+      <section id="view-home" class="view-section active">
+        <div class="section-intro">
+          <p class="intro-tip">ボタンを押すと項目を選べます。画面タッチでもOKです！</p>
+        </div>
+        <div class="menu-grid">
+          <button class="menu-card scannable color-video" data-view="video">
+            <div class="card-icon">😄</div>
+            <div class="card-body">
+              <div class="card-title">お笑いシアター</div>
+              <div class="card-desc">サンドウィッチマン・中川家など大好きな芸人で大笑い</div>
+            </div>
+          </button>
+
+          <button class="menu-card scannable color-fireworks" data-view="fireworks">
+            <div class="card-icon">🎆</div>
+            <div class="card-body">
+              <div class="card-title">ワンボタン花火</div>
+              <div class="card-desc">押すたびに夜空に大輪の花火が咲く</div>
+            </div>
+          </button>
+
+          <button class="menu-card scannable color-slot" data-view="slot">
+            <div class="card-icon">🎰</div>
+            <div class="card-body">
+              <div class="card-title">ラッキースロット</div>
+              <div class="card-desc">タイミングよく押して絵柄を揃えよう</div>
+            </div>
+          </button>
+
+          <button class="menu-card scannable color-voice" data-view="voice">
+            <div class="card-icon">🗣️</div>
+            <div class="card-body">
+              <div class="card-title">おはなしカード</div>
+              <div class="card-desc">「お茶」「ありがとう」などを声で伝える</div>
+            </div>
+          </button>
+        </div>
+      </section>
+
+      <!-- 2. 動画シアター画面（お父さんのお笑いシアター方式） -->
+      <section id="view-video" class="view-section">
+        <!-- 芸人・スター選択画面 -->
+        <div id="video-selector-screen">
+          <div class="view-bar">
+            <button class="btn-back scannable" data-action="back-home">◀ ホームへ戻る</button>
+            <div class="view-title">お父さんのお笑いシアター</div>
+            <div class="header-hint-badge">誰の動画を見ますか？</div>
+          </div>
+
+          <div class="video-comedian-grid" id="comedian-grid">
+            <!-- 芸人・スターの特大カード一覧 -->
+            <button class="comedian-card scannable card-sand" data-comedian="sand">
+              <span class="c-icon">🎙️</span>
+              <div class="c-info">
+                <span class="c-name">サンドウィッチマン</span>
+                <span class="c-desc">定番の爆笑コント＆漫才</span>
+              </div>
+            </button>
+
+            <button class="comedian-card scannable card-nakagawa" data-comedian="nakagawake">
+              <span class="c-icon">🚃</span>
+              <div class="c-info">
+                <span class="c-name">中川家</span>
+                <span class="c-desc">電車のモノマネ・日常観察漫才</span>
+              </div>
+            </button>
+
+            <button class="comedian-card scannable card-kamaitachi" data-comedian="kamaitachi">
+              <span class="c-icon">😺</span>
+              <div class="c-info">
+                <span class="c-name">かまいたち</span>
+                <span class="c-desc">軽快なコントと痛快トーク</span>
+              </div>
+            </button>
+
+            <button class="comedian-card scannable card-chidori" data-comedian="chidori">
+              <span class="c-icon">🦅</span>
+              <div class="c-info">
+                <span class="c-name">千鳥</span>
+                <span class="c-desc">クセがすごい爆笑トーク＆漫才</span>
+              </div>
+            </button>
+
+            <button class="comedian-card scannable card-knights" data-comedian="knights">
+              <span class="c-icon">👓</span>
+              <div class="c-info">
+                <span class="c-name">ナイツ</span>
+                <span class="c-desc">聞き取りやすく笑えるヤホー漫才</span>
+              </div>
+            </button>
+
+            <button class="comedian-card scannable card-soshina" data-comedian="soshina">
+              <span class="c-icon">⚡</span>
+              <div class="c-info">
+                <span class="c-name">粗品（霜降り明星）</span>
+                <span class="c-desc">痛快フリップネタ＆ツッコミ</span>
+              </div>
+            </button>
+
+            <button class="comedian-card scannable card-ohtani" data-comedian="ohtani">
+              <span class="c-icon">⚾</span>
+              <div class="c-info">
+                <span class="c-name">大谷翔平</span>
+                <span class="c-desc">豪快なホームラン＆名場面集</span>
+              </div>
+            </button>
+
+            <button class="comedian-card scannable card-drifters" data-comedian="drifters">
+              <span class="c-icon">📺</span>
+              <div class="c-info">
+                <span class="c-name">志村けん・ドリフ</span>
+                <span class="c-desc">全員集合！懐かしの爆笑コント</span>
+              </div>
+            </button>
+
+            <button class="comedian-card scannable card-songs" data-comedian="songs">
+              <span class="c-icon">🎵</span>
+              <div class="c-info">
+                <span class="c-name">懐かしの昭和歌謡</span>
+                <span class="c-desc">心に残る想い出のヒット曲</span>
+              </div>
+            </button>
+
+            <button class="comedian-card scannable card-nature" data-comedian="nature">
+              <span class="c-icon">🏞️</span>
+              <div class="c-info">
+                <span class="c-name">日本の絶景・鉄道</span>
+                <span class="c-desc">美しい自然風景とローカル線</span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- 大画面動画プレイヤー画面（最初は非表示） -->
+        <div id="video-theater-screen" class="hidden">
+          <div class="view-bar">
+            <button class="btn-back scannable" data-action="back-to-comedians">◀ 芸人を選び直す</button>
+            <div class="theater-channel-badge" id="theater-channel-name">サンドウィッチマン</div>
+            <button class="btn-action scannable" data-action="theater-next">⏭️ つぎの動画へ</button>
+          </div>
+
+          <div class="video-player-container">
+            <div class="video-wrapper">
+              <iframe id="video-frame" 
+                      src="" 
+                      title="シアタープレイヤー" 
+                      frameborder="0" 
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                      allowfullscreen>
+              </iframe>
+            </div>
+            <div class="video-caption">
+              <div class="caption-left">
+                <h3 id="video-title">動画を読み込んでいます...</h3>
+                <span id="video-index-badge" class="index-badge">動画 1 / 10</span>
+              </div>
+              <div class="caption-right">
+                <button class="btn-theater-skip scannable" data-action="theater-next">⏭️ 次の動画（ボタンでスキップ）</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. ワンボタン花火画面 -->
+      <section id="view-fireworks" class="view-section">
+        <div class="view-bar-overlay">
+          <button class="btn-back scannable" data-action="back-home">◀ ホームへ戻る</button>
+          <span class="fireworks-count">打ち上げ数: <strong id="fireworks-count-num">0</strong> 発</span>
+        </div>
+        <div class="fireworks-area" id="fireworks-canvas-wrapper">
+          <canvas id="fireworks-canvas"></canvas>
+          <div class="fireworks-hint">ボタンを押すと花火が打ち上がります！</div>
+        </div>
+      </section>
+
+      <!-- 4. ラッキースロット画面 -->
+      <section id="view-slot" class="view-section">
+        <div class="view-bar">
+          <button class="btn-back scannable" data-action="back-home">◀ ホームへ戻る</button>
+          <div class="view-title">ラッキースロット</div>
+          <div class="slot-score">あたり: <strong id="slot-win-count">0</strong> 回</div>
+        </div>
+
+        <div class="slot-container">
+          <div class="slot-machine">
+            <div class="reel-box">
+              <div class="reel" id="reel-1">🍒</div>
+            </div>
+            <div class="reel-box">
+              <div class="reel" id="reel-2">⭐</div>
+            </div>
+            <div class="reel-box">
+              <div class="reel" id="reel-3">7️⃣</div>
+            </div>
+          </div>
+
+          <div id="slot-message" class="slot-message">ボタンを押してスタート！</div>
+
+          <div class="slot-controls">
+            <button id="btn-slot-action" class="btn-slot scannable" data-action="slot-trigger">
+              ▶ スタート / ストップ
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. おはなしカード（意思伝達・ボイス）画面 -->
+      <section id="view-voice" class="view-section">
+        <div class="view-bar">
+          <button class="btn-back scannable" data-action="back-home">◀ ホームへ戻る</button>
+          <div class="view-title" id="voice-view-title">おはなしカード</div>
+          <span class="hint-text" id="voice-view-hint">押すと声でお知らせします</span>
+        </div>
+
+        <!-- 基本カード群 -->
+        <div id="voice-main-grid" class="voice-grid">
+          <button class="voice-card scannable color-v1" data-voice-key="tea" data-phrase="お茶をください">
+            <span class="v-icon">🍵</span>
+            <span class="v-text">お茶をください</span>
+          </button>
+
+          <button class="voice-card scannable color-v2" data-voice-key="thanks" data-phrase="ありがとうございます">
+            <span class="v-icon">🙏</span>
+            <span class="v-text">ありがとう</span>
+          </button>
+
+          <button class="voice-card scannable color-v3" data-voice-key="tv" data-phrase="テレビをつけてください">
+            <span class="v-icon">📺</span>
+            <span class="v-text">テレビをつけて</span>
+          </button>
+
+          <button class="voice-card scannable color-v4" data-voice-key="yes" data-phrase="はい、そうです">
+            <span class="v-icon">⭕</span>
+            <span class="v-text">はい</span>
+          </button>
+
+          <button class="voice-card scannable color-v5" data-voice-key="no" data-phrase="いいえ、ちがいます">
+            <span class="v-icon">❌</span>
+            <span class="v-text">いいえ</span>
+          </button>
+
+          <!-- 痛いですボタン（押すと部位選択へ切り替え） -->
+          <button class="voice-card scannable color-v6" data-action="open-pain-menu" data-voice-key="pain" data-phrase="痛いです、助けてください">
+            <span class="v-icon">⚡</span>
+            <span class="v-text">痛いです ➔</span>
+          </button>
+
+          <button class="voice-card scannable color-v7" data-voice-key="turn" data-phrase="体の向きを変えてください">
+            <span class="v-icon">🛌</span>
+            <span class="v-text">向きを変えて</span>
+          </button>
+
+          <button class="voice-card scannable color-v8" data-voice-key="call" data-phrase="呼んでいます、来てください">
+            <span class="v-icon">🔔</span>
+            <span class="v-text">呼出ベル</span>
+          </button>
+        </div>
+
+        <!-- 痛い部位選択カード群（最初は非表示） -->
+        <div id="voice-pain-grid" class="voice-grid hidden">
+          <button class="voice-card scannable color-back" data-action="back-to-main-voice">
+            <span class="v-icon">◀</span>
+            <span class="v-text">もどる</span>
+          </button>
+
+          <button class="voice-card scannable color-v6" data-voice-key="pain_head" data-phrase="頭が痛いです">
+            <span class="v-icon">🧠</span>
+            <span class="v-text">あたま</span>
+          </button>
+
+          <button class="voice-card scannable color-v6" data-voice-key="pain_stomach" data-phrase="お腹や胸が痛いです">
+            <span class="v-icon">🫁</span>
+            <span class="v-text">おなか・むね</span>
+          </button>
+
+          <!-- 膀胱炎・尿結石・下腹部痛 -->
+          <button class="voice-card scannable color-v6" data-voice-key="pain_urine" data-phrase="おしっこのあたり、下腹部が痛いです">
+            <span class="v-icon">💧</span>
+            <span class="v-text">おしっこ・下腹部</span>
+          </button>
+
+          <button class="voice-card scannable color-v6" data-voice-key="pain_arm" data-phrase="手や腕が痛いです">
+            <span class="v-icon">🦾</span>
+            <span class="v-text">て・うで</span>
+          </button>
+
+          <button class="voice-card scannable color-v6" data-voice-key="pain_leg" data-phrase="足や腰が痛いです">
+            <span class="v-icon">🦵</span>
+            <span class="v-text">あし・こし</span>
+          </button>
+
+          <button class="voice-card scannable color-v6" data-voice-key="pain_back" data-phrase="背中やお尻が痛いです">
+            <span class="v-icon">🛌</span>
+            <span class="v-text">せなか・おしり</span>
+          </button>
+
+          <button class="voice-card scannable color-v6" data-voice-key="pain_general" data-phrase="全身が痛いです">
+            <span class="v-icon">😣</span>
+            <span class="v-text">ぜんぶ痛い</span>
+          </button>
+        </div>
+
+        <div id="voice-last-spoken" class="voice-last-spoken hidden">
+          発話中: <span id="voice-text-display"></span>
+        </div>
+      </section>
+    </main>
+
+    <!-- 下部インジケーター・ガイド -->
+    <footer class="app-footer">
+      <div class="footer-hint">
+        💡 <strong>OneTouch+:</strong> ナースコールボタン・画面タッチ・スペースキーのいずれかで操作できます。
+      </div>
+      <div id="scan-mode-indicator" class="scan-indicator">モード: 項目スキャン</div>
+    </footer>
+  </div>
+
+  <!-- Google ドライブ連携・ログインモーダル -->
+  <div id="google-auth-modal" class="settings-panel hidden">
+    <div class="settings-content">
+      <h2>☁️ Google ドライブにデータを保存</h2>
+      
+      <div id="auth-unregistered-view">
+        <p style="font-size: 1.1rem; line-height: 1.6; color: #cbd5e1;">
+          Googleアカウントでログインすると、お父さんの<strong>お気に入り動画・スキャン速度・設定</strong>が、あなた専用の<strong>Googleドライブ</strong>に安全に保存・自動同期されます！
+        </p>
+        
+        <div class="drive-features-list">
+          <div class="feature-badge">🔒 <strong>安心のセキュリティ</strong>: データはご自身のGoogleドライブ内のみに保存され、他者に見られることはありません。</div>
+          <div class="feature-badge">📱 <strong>どこでも同期</strong>: 別のタブレットやスマホからログインしても、同じ設定やお気に入りで楽しめます。</div>
+          <div class="feature-badge">👤 <strong>ゲストのままでもOK</strong>: ログインしなくても、そのまま手軽にお使いいただけます。</div>
+        </div>
+
+        <div class="setting-item" style="margin-top: 16px;">
+          <label style="font-size: 0.95rem; color: #94a3b8;">Google OAuth Client ID（公開サーバー設定用）</label>
+          <input type="text" id="input-google-client-id" class="input-text" placeholder="例: 123456789-xxxx.apps.googleusercontent.com" style="width: 100%; padding: 12px; border-radius: 12px; background: #0f172a; border: 2px solid #334155; color: #fff; font-size: 0.95rem;">
+          <small style="color: #64748b; margin-top: 6px; display: block;">※ Google Cloud Consoleで取得したWebクライアントIDを入力すると、本番のGoogleログインが有効になります。</small>
+        </div>
+
+        <div class="settings-actions" style="display: flex; gap: 12px; margin-top: 14px;">
+          <button id="btn-save-client-id-login" class="btn-primary" style="flex: 1;">Googleでログインする</button>
+          <button id="btn-demo-login" class="btn-sub" style="flex: 1; border-color: #3b82f6; color: #60a5fa;">デモログイン（体験）</button>
+        </div>
+      </div>
+
+      <div id="auth-registered-view" class="hidden">
+        <div style="display: flex; align-items: center; gap: 16px; background: #0f172a; padding: 16px; border-radius: 16px; border: 2px solid #334155;">
+          <img id="auth-user-avatar" src="icon.svg" style="width: 60px; height: 60px; border-radius: 50%;" alt="user">
+          <div>
+            <div id="auth-user-name" style="font-size: 1.3rem; font-weight: 800; color: #fff;">ユーザー名</div>
+            <div style="font-size: 0.95rem; color: #10b981; font-weight: 700; margin-top: 4px;">☁️ Googleドライブ同期中</div>
+          </div>
+        </div>
+
+        <div style="margin-top: 20px; display: flex; gap: 12px;">
+          <button id="btn-manual-sync" class="btn-primary" style="flex: 1;">今すぐ同期（保存）</button>
+          <button id="btn-google-logout" class="btn-sub" style="flex: 1; border-color: #ef4444; color: #f87171;">ログアウト</button>
+        </div>
+      </div>
+
+      <div style="margin-top: 14px;">
+        <button id="btn-close-auth-modal" class="btn-sub" style="width: 100%;">とじる</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- スクリプト読み込み -->
+  <script src="js/audio.js"></script>
+  <script src="js/drive.js"></script>
+  <script src="js/scanner.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
