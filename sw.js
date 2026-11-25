@@ -3,7 +3,7 @@
  * 入院中やWi-Fiのない環境でも、朗読小説やおはなしカードが完全動作するよう全リソースをキャッシュ
  */
 
-const CACHE_NAME = 'onetouch-plus-v3';
+const CACHE_NAME = 'onetouch-plus-v4';
 
 // オフラインキャッシュ対象の完全リスト
 const PRECACHE_ASSETS = [

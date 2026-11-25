@@ -417,7 +417,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ----------------------------------------------------
-  // 5. 朗読小説シアター（誤読ゼロ・センテンス完全同期エンジン）
+  // 5. 朗読小説シアター（誤読ゼロ・センテンス完全同期 & しおり機能）
   // ----------------------------------------------------
   const booksSelectorScreen = document.getElementById('books-selector-screen');
   const booksPlayerScreen = document.getElementById('books-player-screen');
@@ -425,14 +425,49 @@ document.addEventListener('DOMContentLoaded', () => {
   const bookPlayingTitle = document.getElementById('book-playing-title');
   const bookCurrentSentence = document.getElementById('book-current-sentence');
   const bookProgressFill = document.getElementById('book-progress-fill');
+  const bookProgressText = document.getElementById('book-progress-text');
   const btnBookPlayToggle = document.getElementById('btn-book-play-toggle');
   const btnBookCtrlCenter = document.getElementById('btn-book-ctrl-center');
+
+  const BOOKMARKS_STORAGE_KEY = 'onetouch_plus_book_progress';
 
   let activeBook = null;
   let activeSentenceIdx = 0;
   let currentSentenceAudio = null;
   let isBookPlaying = false;
   let sentenceTimeout = null;
+
+  // しおり（読書履歴）の取得
+  function getBookProgress(bookId) {
+    try {
+      const data = JSON.parse(localStorage.getItem(BOOKMARKS_STORAGE_KEY) || '{}');
+      return typeof data[bookId] === 'number' ? data[bookId] : 0;
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  // しおり（読書履歴）の保存
+  function saveBookProgress(bookId, index) {
+    if (!bookId) return;
+    try {
+      const data = JSON.parse(localStorage.getItem(BOOKMARKS_STORAGE_KEY) || '{}');
+      data[bookId] = index;
+      localStorage.setItem(BOOKMARKS_STORAGE_KEY, JSON.stringify(data));
+      // Google Drive 同期が有効なら自動保存
+      if (window.googleDriveSync && window.googleDriveSync.isAuthorized) {
+        window.googleDriveSync.saveToDrive();
+      }
+    } catch (e) {
+      console.warn('Failed to save book progress:', e);
+    }
+  }
+
+  function showAppToast(msg) {
+    if (window.googleDriveSync && window.googleDriveSync.showSyncToast) {
+      window.googleDriveSync.showSyncToast(msg);
+    }
+  }
 
   function initBooksView() {
     if (booksSelectorScreen && booksPlayerScreen) {
@@ -448,14 +483,36 @@ document.addEventListener('DOMContentLoaded', () => {
     booksGrid.innerHTML = '';
 
     window.AUDIO_BOOKS.forEach(book => {
+      const savedIdx = getBookProgress(book.id);
+      const total = book.sentences.length;
+      const hasProgress = savedIdx > 0 && savedIdx < total;
+      const isFinished = savedIdx >= total - 1 && savedIdx !== 0;
+
       const card = document.createElement('button');
       card.className = 'book-card scannable';
+
+      let bookmarkBadgeHtml = '';
+      if (hasProgress) {
+        const pct = Math.round(((savedIdx + 1) / total) * 100);
+        bookmarkBadgeHtml = `
+          <div class="b-bookmark-badge">🔖 続きから：第${savedIdx + 1}節 / 全${total}節 (${pct}%)</div>
+          <div class="b-mini-progress"><div class="b-mini-progress-fill" style="width: ${pct}%;"></div></div>
+        `;
+      } else if (isFinished) {
+        bookmarkBadgeHtml = `
+          <div class="b-bookmark-badge" style="background-color: #064e3b; color: #6ee7b7; border-color: #10b981;">
+            ✅ 読了（クリックで最初から）
+          </div>
+        `;
+      }
+
       card.innerHTML = `
         <span class="b-icon">${book.icon}</span>
-        <div class="b-info">
+        <div class="b-info" style="flex: 1;">
           <div class="b-title">${book.title}</div>
           <div class="b-author">${book.author}</div>
-          <div class="b-genre">${book.genre}（全${book.sentences.length}節）</div>
+          <div class="b-genre">${book.genre}（全${total}節）</div>
+          ${bookmarkBadgeHtml}
         </div>
       `;
 
@@ -472,9 +529,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function selectBook(book) {
+  function selectBook(book, forceStartFromBeginning = false) {
     activeBook = book;
-    activeSentenceIdx = 0;
+    const total = book.sentences.length;
+    const savedIdx = getBookProgress(book.id);
+
+    // 読書履歴の判定：強制最初からの場合や読了後の場合は0から、それ以外は前回の続きから
+    if (forceStartFromBeginning || savedIdx <= 0 || savedIdx >= total - 1) {
+      activeSentenceIdx = 0;
+    } else {
+      activeSentenceIdx = savedIdx;
+    }
 
     if (booksSelectorScreen) booksSelectorScreen.classList.add('hidden');
     if (booksPlayerScreen) booksPlayerScreen.classList.remove('hidden');
@@ -485,7 +550,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     isBookPlaying = true;
     updateBookPlayButtons(true);
-    playSentence(0);
+    playSentence(activeSentenceIdx);
+
+    // 前回の続きから再開した場合はトースト案内
+    if (activeSentenceIdx > 0 && !forceStartFromBeginning) {
+      showAppToast(`🔖 『${book.title}』を前回の続き（第${activeSentenceIdx + 1}節）から再開しました`);
+    }
 
     if (scanner.supportEnabled) {
       setTimeout(() => scanner.start(), 300);
@@ -503,12 +573,22 @@ document.addEventListener('DOMContentLoaded', () => {
         bookCurrentSentence.textContent = '【完】お疲れ様でした。ボタンを押すと最初から再生します。';
       }
       if (bookProgressFill) bookProgressFill.style.width = '100%';
+      if (bookProgressText && activeBook) {
+        bookProgressText.textContent = `全 ${activeBook.sentences.length} 節 読了 🎉`;
+      }
+      // 読了時はしおりを先頭にリセット
+      if (activeBook) {
+        saveBookProgress(activeBook.id, 0);
+      }
       return;
     }
 
     activeSentenceIdx = index;
     const currentItem = activeBook.sentences[index];
     const total = activeBook.sentences.length;
+
+    // しおりを現在再生中のセンテンスに更新
+    saveBookProgress(activeBook.id, index);
 
     // 1. 画面の特大文字を更新（アニメーション付き）
     if (bookCurrentSentence) {
@@ -521,10 +601,13 @@ document.addEventListener('DOMContentLoaded', () => {
       }, 150);
     }
 
-    // 2. プログレスバー更新
+    // 2. プログレスバー & 節数テキスト更新
+    const pct = Math.round(((index + 1) / total) * 100);
     if (bookProgressFill) {
-      const pct = Math.round(((index + 1) / total) * 100);
       bookProgressFill.style.width = `${pct}%`;
+    }
+    if (bookProgressText) {
+      bookProgressText.textContent = `第 ${index + 1} 節 / 全 ${total} 節 (${pct}%)`;
     }
 
     // 3. 対応する専用音声ファイルを再生
@@ -559,6 +642,9 @@ document.addEventListener('DOMContentLoaded', () => {
         currentSentenceAudio.pause();
       }
       updateBookPlayButtons(false);
+      // 一時停止した位置をしおりに保存
+      saveBookProgress(activeBook.id, activeSentenceIdx);
+      showAppToast(`⏸️ 第${activeSentenceIdx + 1}節で一時停止しました（しおり保存済）`);
     } else {
       // 再開
       isBookPlaying = true;
@@ -575,6 +661,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const text = playing ? '⏸️ 一時停止' : '▶️ 再開する';
     if (btnBookPlayToggle) btnBookPlayToggle.textContent = text;
     if (btnBookCtrlCenter) btnBookCtrlCenter.textContent = text;
+  }
+
+  // 「最初から読む」機能
+  function restartBookFromBeginning() {
+    if (!activeBook) return;
+    stopBookPlayback();
+    activeSentenceIdx = 0;
+    saveBookProgress(activeBook.id, 0);
+    isBookPlaying = true;
+    updateBookPlayButtons(true);
+    playSentence(0);
+    showAppToast(`⏮️ 『${activeBook.title}』を最初から再生します`);
   }
 
   function rewindBook() {
@@ -596,12 +694,16 @@ document.addEventListener('DOMContentLoaded', () => {
       currentSentenceAudio = null;
     }
     isBookPlaying = false;
+    if (activeBook) {
+      saveBookProgress(activeBook.id, activeSentenceIdx);
+    }
   }
 
   function backToBooksList() {
     stopBookPlayback();
     if (booksPlayerScreen) booksPlayerScreen.classList.add('hidden');
     if (booksSelectorScreen) booksSelectorScreen.classList.remove('hidden');
+    renderBooksGrid(); // しおり表示を最新化
     if (scanner.supportEnabled) {
       setTimeout(() => scanner.start(), 300);
     }
@@ -612,6 +714,13 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       toggleBookPlay();
+    });
+  });
+
+  document.querySelectorAll('[data-action="book-restart"]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      restartBookFromBeginning();
     });
   });
 

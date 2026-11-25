@@ -235,6 +235,11 @@ class GoogleDriveSync {
 
   // アプリ全体のデータを収集
   collectAppData() {
+    let bookProgress = {};
+    try {
+      bookProgress = JSON.parse(localStorage.getItem('onetouch_plus_book_progress') || '{}');
+    } catch (e) {}
+
     return {
       appName: 'OneTouch+',
       version: '1.0',
@@ -245,13 +250,23 @@ class GoogleDriveSync {
         speed: window.appScanner ? window.appScanner.speed : 'v-normal',
         voiceType: window.audioManager ? window.audioManager.voiceType : 'female',
         sound: window.audioManager ? window.audioManager.soundEnabled : true
-      }
+      },
+      bookProgress: bookProgress
     };
   }
 
   // ドライブから読み込んだデータをアプリに反映
   applyDataToApp(syncData) {
-    if (!syncData || !syncData.settings) return;
+    if (!syncData) return;
+
+    // 朗読小説のしおり進捗を同期
+    if (syncData.bookProgress && typeof syncData.bookProgress === 'object') {
+      try {
+        localStorage.setItem('onetouch_plus_book_progress', JSON.stringify(syncData.bookProgress));
+      } catch (e) {}
+    }
+
+    if (!syncData.settings) return;
     const s = syncData.settings;
 
     if (window.appScanner) {

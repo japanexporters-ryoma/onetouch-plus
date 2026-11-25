@@ -310,14 +310,22 @@
             <div class="book-progress-bar-wrap">
               <div id="book-progress-fill" class="book-progress-fill" style="width: 0%;"></div>
             </div>
+            <div id="book-progress-text" class="book-progress-text">第 1 節 / 全 24 節</div>
 
-            <!-- 下部ワンタッチ操作バー -->
+            <!-- 下部ワンタッチ操作バー（しおり・最初から読む対応） -->
             <div class="book-controls-bar">
-              <button class="btn-book-ctrl scannable" data-action="book-rewind">⏪ 10秒戻る</button>
+              <button class="btn-book-ctrl btn-book-restart scannable" data-action="book-restart" title="この本を一番最初から再生します">
+                ⏮️ 最初から読む
+              </button>
+              <button class="btn-book-ctrl scannable" data-action="book-rewind" title="1つ前の文に戻ります">
+                ⏪ 前の文へ
+              </button>
               <button class="btn-book-ctrl-main scannable" data-action="book-toggle-play" id="btn-book-ctrl-center">
                 ⏯️ 停止 / 再開
               </button>
-              <button class="btn-book-ctrl scannable" data-action="book-forward">⏭️ つぎの文へ</button>
+              <button class="btn-book-ctrl scannable" data-action="book-forward" title="次の文へ進みます">
+                ⏭️ 次の文へ
+              </button>
             </div>
           </div>
         </div>
